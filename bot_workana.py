@@ -1,17 +1,28 @@
 from requests_html import HTMLSession
+import logging
+
+# Silencia warnings do Pyppeteer
+logging.getLogger('pyppeteer').setLevel(logging.ERROR)
 
 url = "https://www.workana.com/jobs?category=it-programming"
 
 session = HTMLSession()
 response = session.get(url)
-response.html.render(timeout=30, sleep=2)
+
+# Renderiza a página completa — aumenta o tempo para o JS carregar tudo
+response.html.render(timeout=90, sleep=10, keep_page=True)
 
 projetos = []
 
 # Pega todos os cards de projetos
 for card in response.html.find("div.project-item"):
     titulo_tag = card.find("h2.project-title a", first=True)
-    preco_tag = card.find("div.project-budget span", first=True)
+
+    # tenta pegar o preço pelos seletores conhecidos
+    preco_tag = (
+        card.find("div.project-budget span.values", first=True)
+        or card.find("span[class*=budget]", first=True)
+    )
 
     if titulo_tag:
         titulo = titulo_tag.text.strip()
@@ -24,7 +35,10 @@ for card in response.html.find("div.project-item"):
             "preco": preco
         })
 
-print(f"✅ {len(projetos)} projetos encontrados.")
-for p in projetos[:5]:  # mostra só os 5 primeiros
+# Exibe o resultado
+print(f"✅ {len(projetos)} projetos encontrados.\n")
+
+for p in projetos[:10]:  # mostra só os 10 primeiros
     print(f"- {p['titulo']} | {p['preco']}")
-    print(f"  {p['link']}")
+    print(p['link'])
+    print()
