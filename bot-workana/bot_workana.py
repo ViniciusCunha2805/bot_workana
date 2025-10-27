@@ -42,3 +42,10 @@ for p in projetos[:10]:  # mostra só os 10 primeiros
     print(f"- {p['titulo']} | {p['preco']}")
     print(p['link'])
     print()
+
+def lambda_handler(event=None, context=None):
+    print("✅ Lambda executada com sucesso!")
+    return {
+        "statusCode": 200,
+        "body": "Lambda funcionando localmente!"
+    }
